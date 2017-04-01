@@ -1,48 +1,43 @@
 <template>
   <div class="hello">
-    <h3>Friend List</h3>
-    <chat-list :friendList='friendList'></chat-list>
-    <button @click="addFriend">Add Friend</button>
+    <chat-list 
+        :friendList='friendList'
+        @updateFriendEvent='updateFriendEvent'
+        @deleteFriendEvent='deleteFriendEvent'>
+    </chat-list>
   </div>
 </template>
 
 <script>
-function Friend () {
-  return {
-    firstName: '',
-    lastName: '',
-    birthday: '',
-    id: Math.random() * Date.now(),
-    state: {
-      editing: true,
-      viewing: false
-    }
-  }
-}
+import FriendService from './../services/FriendService.js'
 
 export default {
   name: 'home',
   data () {
     return {
-      friendList: [
-        {
-          id: 232,
-          firstName: 'Ryan',
-          lastName: 'Quey',
-          birthday: '1991-03-25T08:00:00.000Z'
-        },
-        {
-          id: 3020,
-          firstName: 'David',
-          lastName: 'Om',
-          birthday: '1989-05-04T08:00:00.000Z'
-        }
-      ]
+      friendList: []
     }
   },
+  created () {
+    FriendService
+    .getFriendList()
+    .then(data => {
+      this.friendList = data.friend_list
+    })
+  },
   methods: {
-    addFriend: function () {
-      this.friendList.push(new Friend())
+    updateFriendEvent () {
+      FriendService
+      .updateFriendList(this.friendList)
+      .then(data => console.log(data))
+    },
+    deleteFriendEvent (id) {
+      const friend = this.friendList.filter(friend => friend.id === id)
+      const friendIndex = this.friendList.indexOf(friend)
+      this.friendList.splice(friendIndex, 1)
+      FriendService
+      .updateFriendList(this.friendList)
+      .then(data => console.log(data))
     }
   }
 }

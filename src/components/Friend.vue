@@ -3,11 +3,26 @@
     <div class="friend-details">
       <div>
         <p v-if="!friend.state.editing">{{fullName}}</p>
-        <input type="text" :value="fullName" v-if="friend.state.editing" v-model="fullName">
+        <div class="name-container" v-if='friend.state.editing'>
+          <input 
+              class="first-name-input"
+              type="text" 
+              :value="friend.firstName" 
+              v-model="friend.firstName" />
+          <input 
+              class="last-name-input"
+              type="text" 
+              :value="friend.lastName" 
+              v-model="friend.lastName" />
+        </div>
       </div>
       <div>
         <p v-if="!friend.state.editing">{{formatBirthday}}</p>
-        <input type="date" :value="formatBirthday" v-if="friend.state.editing" v-model="formatBirthday">
+        <input 
+            type="date" 
+            :value="formatBirthday" 
+            v-if="friend.state.editing" 
+            v-model="formatBirthday" />
       </div>
     </div>
     <div class="friend-buttons">
@@ -43,6 +58,17 @@
   font-family: 'Avenir';
 }
 
+.name-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.first-name-input,
+.last-name-input {
+  width: 30%;
+}
+
 .friend-buttons {
   display: flex;
   flex-direction: column;
@@ -55,6 +81,18 @@
 </style>
 
 <script>
+function formatDate (date) {
+  var d = new Date(date)
+  var month = '' + (d.getMonth() + 1)
+  var day = '' + d.getDate()
+  var year = d.getFullYear()
+
+  if (month.length < 2) month = '0' + month
+  if (day.length < 2) day = '0' + day
+
+  return [year, month, day].join('-')
+}
+
 export default {
   name: 'friend',
   props: ['friend'],
@@ -72,25 +110,21 @@ export default {
     },
     updateFriend: function () {
       this.$set(this.friend.state, 'editing', !this.friend.state.editing)
+      this.$emit('updateFriendEvent')
     },
     deleteFriend: function () {
-      this.$emit('deleteFriend', this.friend.id)
+      this.$emit('deleteFriendEvent', this.friend.id)
     }
   },
   computed: {
     fullName: {
       get: function () {
         return `${this.friend.firstName} ${this.friend.lastName}`
-      },
-      set: function (newValue) {
-        var names = newValue.split(' ')
-        this.friend.firstName = names[0]
-        this.friend.lastName = names[names.length - 1]
       }
     },
     formatBirthday: {
       get: function () {
-        return new Date(this.friend.birthday).toLocaleDateString()
+        return formatDate(this.friend.birthday)
       },
       set: function (newValue) {
         try {
